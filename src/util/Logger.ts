@@ -2,34 +2,37 @@ import moment from 'moment';
 
 type Level = 'default' | 'info' | 'warning' | 'error';
 
-function log(message: string, level: Level = 'default') {
-  const consoleFunction =
-    level == 'info'
-      ? console.log
-      : level == 'warning'
-      ? console.warn
-      : level == 'error'
-      ? console.error
-      : console.log;
-  const consoleLevel =
-    level == 'info'
-      ? 'INFO'
-      : level == 'warning'
-      ? 'WARNING'
-      : level == 'error'
-      ? 'ERROR'
-      : '~';
-  const consoleColor =
-    level == 'info'
-      ? '\u001b[' + 34 + 'm'
-      : level == 'warning'
-      ? '\u001b[' + 33 + 'm'
-      : level == 'error'
-      ? '\u001b[' + 31 + 'm'
-      : '\u001b[' + 0 + 'm';
+const levelPresets = {
+  default: {
+    consoleFunction: console.log,
+    consoleColor: '\u001b[' + 0 + 'm',
+    consoleLevel: '~',
+  },
+  info: {
+    consoleFunction: console.log,
+    consoleColor: '\u001b[' + 34 + 'm',
+    consoleLevel: 'INFO',
+  },
+  warning: {
+    consoleFunction: console.warn,
+    consoleColor: '\u001b[' + 33 + 'm',
+    consoleLevel: 'WARNING',
+  },
+  error: {
+    consoleFunction: console.error,
+    consoleColor: '\u001b[' + 31 + 'm',
+    consoleLevel: 'ERROR',
+  },
+};
 
-  // const currentTimestamp = moment().format('DD.MM HH:mm:ss');
+function log(message: string, level: Level = 'default') {
   const currentTimestamp = moment().format('HH:mm:ss');
+
+  const { consoleColor, consoleLevel, consoleFunction } = (
+    levelPresets as Object
+  ).hasOwnProperty(level)
+    ? levelPresets[level]
+    : levelPresets.default;
 
   const formattedMessage = `${consoleColor}${consoleLevel}\t | ${currentTimestamp} | ${message}`;
 
