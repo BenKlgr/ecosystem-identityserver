@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2018",                          
+    "module": "esnext",
+    "moduleResolution": "node",                     
+    "noEmitOnError": true,
+    "lib": ["es2017", "ESNext", "DOM"],                            
+    "strict": true,  
+    "esModuleInterop": false,                 
+    "outDir": "dist",
+    "rootDir": "./",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  }
+  ,
+  "include": ["./src/**/*.ts"]
+}
