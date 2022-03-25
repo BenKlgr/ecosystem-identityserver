@@ -1,4 +1,6 @@
 import moment from 'moment';
+import { logToFile, logFilePath } from '../config/logger.config.json';
+import { appendFile, existsSync, writeFile } from 'fs';
 
 type Level = 'default' | 'info' | 'warning' | 'error';
 
@@ -25,7 +27,7 @@ const levelPresets = {
   },
 };
 
-function log(message: string, level: Level = 'default') {
+function log(message: string, level: Level = 'default', toFile: boolean = logToFile) {
   const currentTimestamp = moment().format('HH:mm:ss');
 
   const { consoleColor, consoleLevel, consoleFunction } = (
@@ -34,9 +36,33 @@ function log(message: string, level: Level = 'default') {
     ? levelPresets[level]
     : levelPresets.default;
 
-  const formattedMessage = `${consoleColor}${consoleLevel}\t | ${currentTimestamp} | ${message}`;
+  const formattedMessageForLog = `${currentTimestamp} | ${consoleLevel} > ${message}`;
+  const formattedMessageForConsole = `${consoleColor}${formattedMessageForLog}`;
 
-  consoleFunction(formattedMessage);
+  consoleFunction(formattedMessageForConsole);
+
+  if (toFile) {
+    logMessageToFile(formattedMessageForLog);
+  }
+}
+
+function logMessageToFile(formattedMessage: string) {
+  const fileDateLabel = moment().format('DD_MM_YYYY');
+  const filePath = logFilePath.replace('%DATE%', fileDateLabel);
+
+  if (existsSync(filePath)) {
+    appendFile(filePath, formattedMessage + '\n', (error) => {
+      if (error) log(`Failed appending to ${filePath}`, 'error', false);
+    });
+  } else {
+    writeFile(filePath, '', (error) => {
+      if (error) {
+        log(`Failed creating log ${filePath}`, 'error', false);
+      } else {
+        logMessageToFile(formattedMessage);
+      }
+    });
+  }
 }
 
 export { log };

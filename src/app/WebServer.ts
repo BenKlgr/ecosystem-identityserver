@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import * as WebServerConfig from '../config/webserver.json';
+import { host, port } from '../config/webserver.config.json';
 import { log } from '../util/Logger';
 import AuthController from './controller/AuthController';
 import { IExpress } from '../types/ExpressTypes';
@@ -11,8 +11,6 @@ const WebServerSystem = {
 
 function WebServer() {
   const Server: IExpress = express();
-
-  const { host, port } = WebServerConfig;
 
   WebServerSystem.controllers.forEach((Controller: any) => {
     new Controller(Server).registerRoutes();
