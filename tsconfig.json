@@ -5,12 +5,14 @@
     "moduleResolution": "node",                     
     "noEmitOnError": true,
     "lib": ["es2017", "ESNext", "DOM"],                            
-    "strict": true,  
+    "strict": false,  
     "esModuleInterop": false,                 
     "outDir": "dist",
     "rootDir": "./",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "noImplicitUseStrict": true
   }
   ,
   "include": ["./src/**/*.ts"]

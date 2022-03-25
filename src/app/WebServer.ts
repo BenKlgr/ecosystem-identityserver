@@ -3,15 +3,16 @@ import { host, port } from '../config/webserver.config.json';
 import { log } from '../util/Logger';
 import AuthController from './controller/AuthController';
 import { IExpress } from '../types/ExpressTypes';
+import GeneralController from './controller/GeneralController';
 
 const WebServerSystem = {
-  controllers: [AuthController],
+  controllers: [GeneralController, AuthController],
   middlewares: [],
 };
 
-function WebServer() {
-  const Server: IExpress = express();
+export const Server: IExpress = express();
 
+function WebServer() {
   WebServerSystem.controllers.forEach((Controller: any) => {
     new Controller(Server).registerRoutes();
   });
