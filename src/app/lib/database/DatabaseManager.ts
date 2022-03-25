@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize } from '@sequelize/core';
 import { connectionString } from '../../../config/database.secretconfig.json';
 import { log } from '../../../util/Logger';
 import { defineModels } from './models/Models';

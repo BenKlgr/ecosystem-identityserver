@@ -16,6 +16,9 @@ export const Server: IExpress = express();
 function WebServer() {
   DatabaseManager.connectDatabase();
 
+  log('Applying use-functions.');
+  Server.use(express.json());
+
   log('Loading Controllers.');
   WebServerSystem.controllers.forEach((Controller: any) => {
     new Controller(Server).registerRoutes();

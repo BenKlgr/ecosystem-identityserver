@@ -1,8 +1,7 @@
 import moment from 'moment';
 import { logToFile, logFilePath } from '../config/logger.config.json';
 import { appendFile, existsSync, writeFile } from 'fs';
-
-type Level = 'default' | 'info' | 'warning' | 'error';
+import { LogLevel } from '../types/Logger';
 
 const levelPresets = {
   default: {
@@ -27,7 +26,7 @@ const levelPresets = {
   },
 };
 
-function log(message: string, level: Level = 'default', toFile: boolean = logToFile) {
+function log(message: string, level: LogLevel = 'default', toFile: boolean = logToFile) {
   const currentTimestamp = moment().format('HH:mm:ss');
 
   const { consoleColor, consoleLevel, consoleFunction } = (
