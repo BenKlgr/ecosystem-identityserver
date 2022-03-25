@@ -4,6 +4,7 @@ import { log } from '../util/Logger';
 import AuthController from './controller/AuthController';
 import { IExpress } from '../types/ExpressTypes';
 import GeneralController from './controller/GeneralController';
+import DatabaseManager from './lib/database/DatabaseManager';
 
 const WebServerSystem = {
   controllers: [GeneralController, AuthController],
@@ -13,6 +14,9 @@ const WebServerSystem = {
 export const Server: IExpress = express();
 
 function WebServer() {
+  DatabaseManager.connectDatabase();
+
+  log('Loading Controllers.');
   WebServerSystem.controllers.forEach((Controller: any) => {
     new Controller(Server).registerRoutes();
   });

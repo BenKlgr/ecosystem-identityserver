@@ -1,7 +1,6 @@
 import { Express } from 'express';
 import { ICallbackFunction, IMiddlewareFunction } from '../../types/ExpressTypes';
 import EndpointManager from '../lib/EndpointManager';
-import WebServer from '../WebServer';
 
 type IMethodOptions = {
   middlewares?: IMiddlewareFunction[];
