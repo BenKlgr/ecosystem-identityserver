@@ -11,12 +11,13 @@ import { User } from '../lib/database/models/Models';
 import EndpointManager from '../lib/EndpointManager';
 import { Failure, Ok } from '../lib/ResponseFunctions';
 import { getUserById } from '../lib/UserFunctions';
+import { AntispamMiddleware } from '../middleware/AntispamMiddleware';
 import LoggingMiddleware from '../middleware/LoggingMiddleware';
 import BaseController from './BaseController';
 
 export default class AuthController extends BaseController {
   baseUrl: string = '/auth';
-  defaultMiddleware: IMiddlewareFunction[] = [LoggingMiddleware];
+  defaultMiddleware: IMiddlewareFunction[] = [LoggingMiddleware, AntispamMiddleware];
 
   public registerRoutes(): void {
     this.get(
