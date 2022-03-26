@@ -3,12 +3,17 @@ import moment from 'moment';
 import { secret } from '../../config/jwt.secretconfig.json';
 import { ITokenPayload } from '../../types/Authentication';
 import { log } from '../../util/Logger';
-import { SignInEntry, User } from './database/models/Models';
+import { TokenUseHistory, User } from './database/models/Models';
 import { Op } from '@sequelize/core';
 import crypto from 'crypto';
+import { IRequest } from '../../types/ExpressTypes';
 
-export async function verifyToken(token: string): Promise<boolean> {
-  const decodedPayload = verify(token, secret) as ITokenPayload;
+export async function verifyToken(token: string, req: IRequest): Promise<boolean> {
+  const decodedPayload = getTokenPayload(token);
+
+  if (decodedPayload == null) {
+    return false;
+  }
 
   const { userId, email, createdAt } = decodedPayload;
 
@@ -17,24 +22,48 @@ export async function verifyToken(token: string): Promise<boolean> {
     return false;
   }
 
-  const lastSignInEntry = await SignInEntry.findOne({
+  const lastTokenUseHistoryEntry = await TokenUseHistory.findOne({
     where: {
       userId,
     },
     order: [['createdAt', 'DESC']],
   });
 
-  if (lastSignInEntry == null) {
-    log(`There was no last sign-in entry found to the user id ${userId}`, 'warning');
-    return false;
-  }
+  const agent = req.get('User-Agent');
+  const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress) as string;
 
-  const lastSignInMoment = moment(lastSignInEntry.createdAt);
-  const differenceInDays = moment().diff(lastSignInMoment, 'days');
+  if (!lastTokenUseHistoryEntry) {
+    TokenUseHistory.create({
+      userId,
+      token,
+      address,
+      agent,
+      location: '',
+      timestamp: moment().toDate(),
+    });
+  } else {
+    if (
+      (lastTokenUseHistoryEntry.agent != agent &&
+        lastTokenUseHistoryEntry.address != address) ||
+      lastTokenUseHistoryEntry.token != token
+    ) {
+      TokenUseHistory.create({
+        userId,
+        token,
+        address,
+        agent,
+        location: '',
+        timestamp: moment().toDate(),
+      });
+    } else {
+      const lastSignInMoment = moment(lastTokenUseHistoryEntry.createdAt);
+      const differenceInDays = moment().diff(lastSignInMoment, 'days');
 
-  if (differenceInDays > 30) {
-    log(`Token was too old`, 'warning');
-    return false;
+      if (differenceInDays > 14) {
+        log(`Token was too old`, 'warning');
+        return false;
+      }
+    }
   }
 
   const user = await User.findOne({
@@ -45,6 +74,15 @@ export async function verifyToken(token: string): Promise<boolean> {
   });
 
   return Boolean(user);
+}
+
+export function getTokenPayload(token: string) {
+  try {
+    const decodedPayload = verify(token, secret) as ITokenPayload;
+    return decodedPayload;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function signIn(
@@ -70,6 +108,43 @@ export async function signIn(
   }
 
   return generateToken(user.id, user.email);
+}
+
+export async function registerUser(
+  username: string,
+  email: string,
+  firstname: string,
+  lastname: string,
+  birthday: string,
+  password: string
+) {
+  const user = await User.findOne({
+    where: {
+      [Op.or]: [
+        {
+          username,
+        },
+        {
+          email,
+        },
+      ],
+    },
+  });
+
+  if (user) {
+    return 'username_or_email_taken';
+  }
+
+  await User.create({
+    username,
+    email,
+    password: hashPassword(password),
+    firstname,
+    lastname,
+    birthday: moment(birthday, 'DD.MM.YYYY').toDate(),
+  });
+
+  return 'created';
 }
 
 export function generateToken(userId: number, email: string): string {

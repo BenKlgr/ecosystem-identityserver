@@ -1,9 +1,16 @@
 import moment from 'moment';
 import { IMiddlewareFunction, IRequest, IResponse } from '../../types/ExpressTypes';
-import { hashPassword, signIn } from '../lib/AuthenticationFunctions';
+import {
+  getTokenPayload,
+  hashPassword,
+  registerUser,
+  signIn,
+  verifyToken,
+} from '../lib/AuthenticationFunctions';
 import { User } from '../lib/database/models/Models';
 import EndpointManager from '../lib/EndpointManager';
 import { Failure, Ok } from '../lib/ResponseFunctions';
+import { getUserById } from '../lib/UserFunctions';
 import LoggingMiddleware from '../middleware/LoggingMiddleware';
 import BaseController from './BaseController';
 
@@ -14,10 +21,59 @@ export default class AuthController extends BaseController {
   public registerRoutes(): void {
     this.get(
       '/',
-      (req: IRequest, res: IResponse) => {
-        res.send('Hallo 123');
+      async (req: IRequest, res: IResponse) => {
+        const headers = req.headers;
+        const authorizationHeader = headers.authorization;
+
+        if (!authorizationHeader) {
+          return res.json(Failure('invalid_headers'));
+        }
+
+        const token = authorizationHeader.split(' ')[1];
+
+        if (!token) {
+          return res.json(Failure('invalid_token'));
+        }
+
+        const tokenValid: boolean = await verifyToken(token, req);
+
+        if (tokenValid) {
+          const userId = getTokenPayload(token).userId;
+          const user = (await getUserById(userId)).toJSON();
+
+          user.password = undefined;
+
+          return res.json(Ok(user));
+        } else {
+          return res.json(Failure('invalid_token'));
+        }
       },
       { description: 'Gets the current session' }
+    );
+
+    this.get(
+      '/token/:token',
+      async (req: IRequest, res: IResponse) => {
+        const token = req.params.token;
+
+        if (!token) {
+          return res.json(Failure('invalid_token'));
+        }
+
+        const tokenValid: boolean = await verifyToken(token, req);
+
+        if (tokenValid) {
+          const userId = getTokenPayload(token).userId;
+          const user = (await getUserById(userId)).toJSON();
+
+          user.password = undefined;
+
+          return res.json(Ok(user));
+        } else {
+          return res.json(Failure('invalid_token'));
+        }
+      },
+      { description: 'Gets user by token' }
     );
 
     this.post(
@@ -26,13 +82,13 @@ export default class AuthController extends BaseController {
         const { usernameOrEmail, password } = req.body;
 
         if (!(usernameOrEmail && password)) {
-          return res.json(Failure('invalid body'));
+          return res.json(Failure('invalid_body'));
         }
 
         const token: string | null = await signIn(usernameOrEmail, password);
 
         if (!token) {
-          return res.json(Failure('invalid credentials'));
+          return res.json(Failure('invalid_credentials'));
         } else {
           return res.json(Ok(token));
         }
@@ -43,22 +99,27 @@ export default class AuthController extends BaseController {
     );
 
     this.post(
-      '/debug',
+      '/register',
       async (req: IRequest, res: IResponse) => {
-        const createdUser = await User.create({
-          email: 'benklingeler@gmail.com',
-          username: 'bklingeler',
-          password: hashPassword('testpass'),
+        const { username, email, firstname, lastname, birthday, password } = req.body;
 
-          firstname: 'Ben',
-          lastname: 'Klingeler',
-          birthday: moment().toDate(),
-        });
+        if (!(username && email && firstname && lastname && birthday && password)) {
+          return res.json(Failure('invalid_body'));
+        }
 
-        res.json(createdUser);
+        const userCreateResponse = await registerUser(
+          username,
+          email,
+          firstname,
+          lastname,
+          birthday,
+          password
+        );
+
+        res.json(Failure(userCreateResponse));
       },
       {
-        description: 'Creates a debug user',
+        description: 'Performs an sign in',
       }
     );
   }

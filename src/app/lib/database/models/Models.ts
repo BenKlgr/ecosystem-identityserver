@@ -24,19 +24,23 @@ export class User extends Model<
   declare lastname: string;
   declare birthday: Date;
 
-  declare getSignInEntries: HasManyGetAssociationsMixin<SignInEntry>;
+  declare getTokenUseHistroyEntries: HasManyGetAssociationsMixin<TokenUseHistory>;
 
-  public declare static associations: { signInEntries: Association<User, SignInEntry> };
+  public declare static associations: {
+    tokenUseHistoryEntries: Association<User, TokenUseHistory>;
+  };
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
 
-export class SignInEntry extends Model<
-  InferAttributes<SignInEntry, {}>,
-  InferCreationAttributes<SignInEntry, {}>
+export class TokenUseHistory extends Model<
+  InferAttributes<TokenUseHistory, {}>,
+  InferCreationAttributes<TokenUseHistory, {}>
 > {
   declare id: CreationOptional<number>;
+
+  declare token: string;
 
   declare timestamp: Date;
   declare location: string;
@@ -88,12 +92,15 @@ export async function defineModels() {
     { sequelize, modelName: 'User' }
   );
 
-  SignInEntry.init(
+  TokenUseHistory.init(
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+      },
+      token: {
+        type: DataTypes.STRING,
       },
       timestamp: {
         type: DataTypes.DATE,
@@ -114,13 +121,13 @@ export async function defineModels() {
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },
-    { sequelize, modelName: 'SignInEntry' }
+    { sequelize, modelName: 'TokenUseHistory' }
   );
 
-  User.hasMany(SignInEntry, {
+  User.hasMany(TokenUseHistory, {
     sourceKey: 'id',
     foreignKey: 'userId',
-    as: 'signInEntries',
+    as: 'tokenUseHistoryEntries',
   });
 
   await sequelize.sync();
