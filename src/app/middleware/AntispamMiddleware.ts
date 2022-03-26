@@ -14,14 +14,14 @@ export function AntispamMiddleware<IMiddlewareFunction>(
   res: IResponse,
   next: Function
 ) {
-  requestHistory = requestHistory.filter(
-    (request) => request.timestamp.diff(moment(), 'minutes') <= 1
-  );
+  requestHistory = requestHistory.filter((request) => {
+    return moment().diff(request.timestamp, 'seconds') < 5;
+  });
 
   const address = (req.headers['x-forwarded-for'] || req.socket.remoteAddress) as string;
   const filteredEntries = requestHistory.filter((request) => request.address == address);
 
-  const blocked = filteredEntries.length > 10;
+  const blocked = filteredEntries.length > 5;
 
   if (blocked) {
     res.json(Failure('antispam'));
