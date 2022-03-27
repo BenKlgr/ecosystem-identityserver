@@ -1,12 +1,12 @@
+import { Op } from '@sequelize/core';
+import crypto from 'crypto';
 import { sign, verify } from 'jsonwebtoken';
 import moment from 'moment';
 import { secret } from '../../config/jwt.secretconfig.json';
 import { ITokenPayload } from '../../types/Authentication';
+import { IRequest } from '../../types/ExpressTypes';
 import { log } from '../../util/Logger';
 import { TokenUseHistory, User } from './database/models/Models';
-import { Op } from '@sequelize/core';
-import crypto from 'crypto';
-import { IRequest } from '../../types/ExpressTypes';
 
 export async function verifyToken(token: string, req: IRequest): Promise<boolean> {
   const decodedPayload = getTokenPayload(token);

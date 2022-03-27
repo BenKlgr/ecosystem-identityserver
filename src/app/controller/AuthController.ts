@@ -1,14 +1,10 @@
-import moment from 'moment';
 import { IMiddlewareFunction, IRequest, IResponse } from '../../types/ExpressTypes';
 import {
   getTokenPayload,
-  hashPassword,
   registerUser,
   signIn,
   verifyToken,
 } from '../lib/AuthenticationFunctions';
-import { User } from '../lib/database/models/Models';
-import EndpointManager from '../lib/EndpointManager';
 import { Failure, Ok } from '../lib/ResponseFunctions';
 import { getUserById } from '../lib/UserFunctions';
 import { AntispamMiddleware } from '../middleware/AntispamMiddleware';
