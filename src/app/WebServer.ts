@@ -5,6 +5,7 @@ import AuthController from './controller/AuthController';
 import { IExpress } from '../types/ExpressTypes';
 import GeneralController from './controller/GeneralController';
 import DatabaseManager from './lib/database/DatabaseManager';
+import cors from 'cors';
 
 const WebServerSystem = {
   controllers: [GeneralController, AuthController],
@@ -18,6 +19,7 @@ function WebServer() {
 
   log('Applying use-functions.');
   Server.use(express.json());
+  Server.use(cors());
 
   log('Loading Controllers.');
   WebServerSystem.controllers.forEach((Controller: any) => {

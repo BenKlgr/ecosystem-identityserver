@@ -17,7 +17,7 @@ export default class AuthController extends BaseController {
 
   public registerRoutes(): void {
     this.get(
-      '/',
+      '/current',
       async (req: IRequest, res: IResponse) => {
         const headers = req.headers;
         const authorizationHeader = headers.authorization;
