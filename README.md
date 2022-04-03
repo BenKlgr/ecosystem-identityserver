@@ -1,3 +1,8 @@
+### Disclaimer ⚠️
+After carefull concideration, **I will no longer work** on this repository. The systems are integrated directly into the ecosystem-personalmanagement project. 
+
+---
+
 ### Welcome! 👋
 
 This system is part of my new ecosystem 🚀that I build for my website benklingeler.de and projects that are coming in the future. My main goal 🎖️ is to develop an environment with dynamic systems, which are all using centralized functions, such as user authentication, server management, data flow and more.
